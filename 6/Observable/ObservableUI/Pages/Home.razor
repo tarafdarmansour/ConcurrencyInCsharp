@@ -1,0 +1,232 @@
+﻿@page "/"
+@using ObservableUI.Components
+
+<PageTitle>آموزش System.Reactive و IObservable</PageTitle>
+
+<div class="home-container">
+    <header class="app-header">
+        <h1>🚀 آموزش عملی System.Reactive و IObservable</h1>
+        <p class="subtitle">
+            نمایش کاربردهای عملی کتابخانه System.Reactive و الگوی Observer در برنامه‌نویسی واکنشی
+        </p>
+        <p class="subtitle">
+            Practical demonstration of System.Reactive library and Observer pattern in reactive programming
+        </p>
+    </header>
+
+    <div class="introduction">
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h4>🏗️ جریان داده بلادرنگ</h4>
+                <p>نمایش قیمت بورس، داده‌های سنسور و لاگ‌های سیستم</p>
+                <p>Stock prices, sensor data, and system logs</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎯 مدیریت رویدادها</h4>
+                <p>رویدادهای کاربر، سیستم و مدیریت کلیک‌ها</p>
+                <p>User events, system events, and click handling</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔄 تبدیل داده‌ها</h4>
+                <p>فیلتر، تبدیل و تجمیع داده‌ها</p>
+                <p>Data filtering, transformation, and aggregation</p>
+            </div>
+            <div class="feature-card">
+                <h4>🛡️ مدیریت خطا</h4>
+                <p>استراتژی‌های مختلف مدیریت خطا</p>
+                <p>Various error handling strategies</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔗 ترکیب Observables</h4>
+                <p>Merge, CombineLatest, Zip و سایر عملگرها</p>
+                <p>Merge, CombineLatest, Zip and other operators</p>
+            </div>
+            <div class="feature-card">
+                <h4>⚡ رابط بلادرنگ</h4>
+                <p>نمایش داده‌ها به صورت زنده و تعاملی</p>
+                <p>Live and interactive data display</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="components-section">
+       @*  <StreamingComponent />
+        <TransformationComponent />
+        <ErrorHandlingComponent />
+        <EventComponent/> *@
+        <CombiningComponent/>
+    </div>
+
+    <footer class="app-footer">
+        <p>
+            ساخته شده با ❤️ برای آموزش برنامه‌نویسی واکنشی<br>
+            Built with ❤️ for reactive programming education
+        </p>
+        <p>
+            <a href="https://learn.microsoft.com/en-us/dotnet/api/system.reactive" target="_blank">
+                مستندات System.Reactive
+            </a> |
+            <a href="https://reactivex.io/" target="_blank">
+                ReactiveX
+            </a>
+        </p>
+    </footer>
+</div>
+
+<style>
+.home-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.app-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+    margin: 0 0 15px 0;
+    font-size: 2.5em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    margin: 5px 0;
+    font-size: 1.1em;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+.introduction {
+    margin-bottom: 40px;
+}
+
+.intro-card {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.intro-card h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.intro-card p {
+    color: #555;
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.feature-card h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.feature-card p {
+    color: #666;
+    margin: 5px 0;
+    font-size: 0.9em;
+}
+
+.components-section {
+    margin-bottom: 40px;
+}
+
+.coming-soon {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+    border: 2px dashed #007bff;
+}
+
+.coming-soon h4 {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.coming-soon p {
+    color: #666;
+    margin: 5px 0;
+}
+
+.app-footer {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-top: 3px solid #007bff;
+}
+
+.app-footer p {
+    margin: 10px 0;
+    color: #666;
+}
+
+.app-footer a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.app-footer a:hover {
+    text-decoration: underline;
+}
+
+/* RTL Support */
+[dir="rtl"] .feature-card,
+[dir="rtl"] .intro-card {
+    text-align: right;
+}
+
+/* Responsive Design */
+@@media (max-width: 768px) {
+    .app-header h1 {
+        font-size: 2em;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-container {
+        padding: 10px;
+    }
+
+    .app-header {
+        padding: 20px;
+    }
+}
+</style>

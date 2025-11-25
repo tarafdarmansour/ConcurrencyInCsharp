@@ -1,0 +1,332 @@
+@using Microsoft.Extensions.Logging.Abstractions
+@using ObservableUI.Services
+@inject SimpleStreamingService StreamingService
+@implements IDisposable
+
+<div class="streaming-section">
+    <h3 class="section-title">🏗️ جریان داده بلادرنگ / Real-time Data Streaming</h3>
+
+    <div class="controls">
+        <button class="btn btn-primary" @onclick="StartStockStream">
+            @(isStockStreamActive ? "توقف قیمت بورس" : "شروع قیمت بورس") /
+            @(isStockStreamActive ? "Stop Stock Prices" : "Start Stock Prices")
+        </button>
+
+        <button class="btn btn-success" @onclick="StartSensorStream">
+            @(isSensorStreamActive ? "توقف سنسورها" : "شروع سنسورها") /
+            @(isSensorStreamActive ? "Stop Sensors" : "Start Sensors")
+        </button>
+
+        <button class="btn btn-warning" @onclick="StartLogStream">
+            @(isLogStreamActive ? "توقف لاگ‌ها" : "شروع لاگ‌ها") /
+            @(isLogStreamActive ? "Stop Logs" : "Start Logs")
+        </button>
+
+        <button class="btn btn-danger" @onclick="StopAllStreams">
+            توقف همه / Stop All
+        </button>
+    </div>
+
+    <div class="data-display">
+        @if (stockPrices.Any())
+        {
+            <div class="data-panel">
+                <h4>📈 قیمت های بورس / Stock Prices</h4>
+                <div class="data-list">
+                    @foreach (var stock in stockPrices.Take(5))
+                    {
+                        <div class="data-item stock-item">
+                            <strong>@stock.Symbol</strong>
+                            <span class="price">$@stock.Price.ToString("F2")</span>
+                            <span class="change @(stock.Change >= 0 ? "positive" : "negative")">
+                                @stock.Change.ToString("+0.00;-0.00")
+                            </span>
+                            <small>@stock.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (sensorData.Any())
+        {
+            <div class="data-panel">
+                <h4>🌡️ داده های سنسور / Sensor Data</h4>
+                <div class="data-list">
+                    @foreach (var sensor in sensorData.Take(5))
+                    {
+                        <div class="data-item sensor-item">
+                            <strong>@sensor.SensorId</strong>
+                            <span>@sensor.TemperatureC.ToString("F1")°C</span>
+                            <span>@sensor.Humidity.ToString("F1")%</span>
+                            <small>@sensor.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (systemLogs.Any())
+        {
+            <div class="data-panel">
+                <h4>📋 لاگ های سیستم / System Logs</h4>
+                <div class="data-list">
+                    @foreach (var log in systemLogs.Take(5))
+                    {
+                        <div class="data-item log-item">
+                            <span class="log-level @log.Level.ToLower()">[@log.Level]</span>
+                            <span>@log.Message</span>
+                            <small>@log.Source</small>
+                            <small>@log.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="info-panel">
+        <p>
+            <strong>مفاهیم نمایش داده شده:</strong><br>
+            - تولید داده‌های پیوسته با Observable.Interval<br>
+            - فیلتر کردن جریان داده با Where<br>
+            - نمایش داده‌های بلادرنگ در UI<br>
+            - مدیریت چندین جریان همزمان
+        </p>
+        <p>
+            <strong>Concepts demonstrated:</strong><br>
+            - Continuous data generation with Observable.Interval<br>
+            - Data stream filtering with Where<br>
+            - Real-time UI updates<br>
+            - Managing multiple concurrent streams
+        </p>
+    </div>
+</div>
+
+<style>
+.streaming-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.section-title {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-primary { background-color: #007bff; color: white; }
+.btn-primary:hover { background-color: #0056b3; }
+
+.btn-success { background-color: #28a745; color: white; }
+.btn-success:hover { background-color: #1e7e34; }
+
+.btn-warning { background-color: #ffc107; color: black; }
+.btn-warning:hover { background-color: #e0a800; }
+
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #c82333; }
+
+.data-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.data-panel {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-panel h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 5px;
+}
+
+.data-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.data-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 4px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #6c757d;
+}
+
+.stock-item { border-left-color: #007bff; }
+.sensor-item { border-left-color: #28a745; }
+.log-item { border-left-color: #ffc107; }
+
+.price { font-weight: bold; color: #007bff; }
+.change.positive { color: #28a745; }
+.change.negative { color: #dc3545; }
+
+.log-level {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+.log-level.info { background-color: #d1ecf1; color: #0c5460; }
+.log-level.warn { background-color: #fff3cd; color: #856404; }
+.log-level.error { background-color: #f8d7da; color: #721c24; }
+.log-level.debug { background-color: #e2e3e5; color: #383d41; }
+
+.data-item small {
+    color: #6c757d;
+    font-size: 0.8em;
+}
+
+.info-panel {
+    background: #e7f3ff;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.info-panel p {
+    margin: 5px 0;
+    line-height: 1.6;
+}
+</style>
+
+@code {
+    private List<StockPrice> stockPrices = new();
+    private List<SensorData> sensorData = new();
+    private List<LogEntry> systemLogs = new();
+
+    private bool isStockStreamActive;
+    private bool isSensorStreamActive;
+    private bool isLogStreamActive;
+
+    private IDisposable? stockSubscription;
+    private IDisposable? sensorSubscription;
+    private IDisposable? logSubscription;
+
+    protected override void OnInitialized()
+    {
+        // کامپوننت آماده است اما جریان‌ها هنوز شروع نشده‌اند
+        // Component is ready but streams haven't started yet
+    }
+
+    private void StartStockStream()
+    {
+        if (isStockStreamActive)
+        {
+            stockSubscription?.Dispose();
+            isStockStreamActive = false;
+        }
+        else
+        {
+            StreamingService.StartStockPriceStream();
+            stockSubscription = StreamingService.StockPrices.Subscribe(stock =>
+            {
+                InvokeAsync(() =>
+                {
+                    stockPrices.Insert(0, stock);
+                    if (stockPrices.Count > 10) stockPrices.RemoveAt(10);
+                    StateHasChanged();
+                });
+            });
+            isStockStreamActive = true;
+        }
+    }
+
+    private void StartSensorStream()
+    {
+        if (isSensorStreamActive)
+        {
+            sensorSubscription?.Dispose();
+            isSensorStreamActive = false;
+        }
+        else
+        {
+            StreamingService.StartSensorDataStream();
+            sensorSubscription = StreamingService.SensorData.Subscribe(sensor =>
+            {
+                InvokeAsync(() =>
+                {
+                    sensorData.Insert(0, sensor);
+                    if (sensorData.Count > 10) sensorData.RemoveAt(10);
+                    StateHasChanged();
+                });
+            });
+            isSensorStreamActive = true;
+        }
+    }
+
+    private void StartLogStream()
+    {
+        if (isLogStreamActive)
+        {
+            logSubscription?.Dispose();
+            isLogStreamActive = false;
+        }
+        else
+        {
+            StreamingService.StartSystemLogStream();
+            logSubscription = StreamingService.SystemLogs.Subscribe(log =>
+            {
+                InvokeAsync(() =>
+                {
+                    systemLogs.Insert(0, log);
+                    if (systemLogs.Count > 10) systemLogs.RemoveAt(10);
+                    StateHasChanged();
+                });
+            });
+            isLogStreamActive = true;
+        }
+    }
+
+    private void StopAllStreams()
+    {
+        stockSubscription?.Dispose();
+        sensorSubscription?.Dispose();
+        logSubscription?.Dispose();
+
+        isStockStreamActive = false;
+        isSensorStreamActive = false;
+        isLogStreamActive = false;
+
+        StreamingService.StopAllStreams();
+    }
+
+    public void Dispose()
+    {
+        stockSubscription?.Dispose();
+        sensorSubscription?.Dispose();
+        logSubscription?.Dispose();
+    }
+}

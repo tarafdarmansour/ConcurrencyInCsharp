@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جستجوی کتاب</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .search-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .cancel-button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            margin-top: 10px;
+        }
+
+        .cancel-button:hover {
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .book-info {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .book-info.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .book-info h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #333;
+            font-size: 16px;
+        }
+
+        .error-message {
+            display: none;
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 2px solid #fcc;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+            margin: 40px 0;
+        }
+
+        .section-title {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .books-list {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .books-list.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .books-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .book-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .book-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .book-item-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .book-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .book-item-price {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .book-item-id {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/python-books.html" style="display: inline-block; padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s;">
+                🐍 مشاهده کتاب‌های Python (Reactive)
+            </a>
+        </div>
+        
+        <h1>📚 جستجوی کتاب</h1>
+        
+        <form class="search-form" onsubmit="searchBook(event)">
+            <div class="form-group">
+                <label for="bookId">شناسه کتاب:</label>
+                <input type="number" id="bookId" name="bookId" min="1" required placeholder="مثال: 1">
+            </div>
+            <button type="submit" id="searchBookButton">جستجو</button>
+            <button type="button" class="cancel-button" id="cancelSearchBookButton" onclick="cancelSearchBook()" style="display: none;">لغو جستجو</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>در حال جستجو...</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="book-info" id="bookInfo">
+            <h2>📖 اطلاعات کتاب</h2>
+            <div class="info-item">
+                <div class="info-label">شناسه:</div>
+                <div class="info-value" id="bookIdValue"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">نام کتاب:</div>
+                <div class="info-value" id="bookName"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">قیمت:</div>
+                <div class="info-value" id="bookPrice"></div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h2 class="section-title">🔍 جستجو بر اساس نام</h2>
+        
+        <form class="search-form" onsubmit="searchBooksByName(event)">
+            <div class="form-group">
+                <label for="searchTerm">عبارت جستجو:</label>
+                <input type="text" id="searchTerm" name="searchTerm" required placeholder="مثال: JavaScript">
+            </div>
+            <button type="submit" id="searchBooksButton">جستجو</button>
+            <button type="button" class="cancel-button" id="cancelSearchBooksButton" onclick="cancelSearchBooks()" style="display: none;">لغو جستجو</button>
+        </form>
+
+        <div class="loading" id="loadingSearch">
+            <div class="spinner"></div>
+            <p>در حال جستجو...</p>
+        </div>
+
+        <div class="error-message" id="errorMessageSearch"></div>
+
+        <div class="books-list" id="booksList">
+            <h3 id="booksListTitle"></h3>
+            <div id="booksListContent"></div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h2 class="section-title">🌊 جستجوی Stream (جریان داده)</h2>
+        
+        <form class="search-form" onsubmit="searchBooksStream(event)">
+            <div class="form-group">
+                <label for="searchTermStream">عبارت جستجو:</label>
+                <input type="text" id="searchTermStream" name="searchTermStream" required placeholder="مثال: Python">
+            </div>
+            <button type="submit" id="searchBooksStreamButton">جستجوی Stream</button>
+            <button type="button" class="cancel-button" id="cancelSearchBooksStreamButton" onclick="cancelSearchBooksStream()" style="display: none;">لغو جستجو</button>
+        </form>
+
+        <div class="loading" id="loadingStream">
+            <div class="spinner"></div>
+            <p>در حال دریافت داده‌ها...</p>
+        </div>
+
+        <div class="error-message" id="errorMessageStream"></div>
+
+        <div class="books-list" id="booksStreamList">
+            <h3 id="booksStreamListTitle"></h3>
+            <div id="booksStreamListContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentAbortController = null;
+        let currentSearchAbortController = null;
+        let currentStreamAbortController = null;
+
+        async function searchBook(event) {
+            event.preventDefault();
+            
+            // Cancel previous request if exists
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+            
+            currentAbortController = new AbortController();
+            
+            const bookId = document.getElementById('bookId').value;
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('errorMessage');
+            const bookInfo = document.getElementById('bookInfo');
+            const searchButton = document.getElementById('searchBookButton');
+            const cancelButton = document.getElementById('cancelSearchBookButton');
+            
+            // Hide previous results
+            errorMessage.classList.remove('show');
+            bookInfo.classList.remove('show');
+            loading.classList.add('show');
+            searchButton.style.display = 'none';
+            cancelButton.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/books/${bookId}`, {
+                    signal: currentAbortController.signal
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('کتابی با این شناسه یافت نشد.');
+                    }
+                    throw new Error('خطا در دریافت اطلاعات کتاب.');
+                }
+                
+                const book = await response.json();
+                
+                // Display book information
+                document.getElementById('bookIdValue').textContent = book.id;
+                document.getElementById('bookName').textContent = book.name;
+                document.getElementById('bookPrice').textContent = formatPrice(book.price) + ' تومان';
+                
+                loading.classList.remove('show');
+                bookInfo.classList.add('show');
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentAbortController = null;
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    errorMessage.textContent = 'جستجو لغو شد.';
+                    loading.classList.remove('show');
+                } else {
+                    loading.classList.remove('show');
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                }
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentAbortController = null;
+            }
+        }
+
+        function cancelSearchBook() {
+            if (currentAbortController) {
+                currentAbortController.abort();
+                currentAbortController = null;
+            }
+        }
+        
+        function formatPrice(price) {
+            return new Intl.NumberFormat('fa-IR').format(price);
+        }
+
+        async function searchBooksByName(event) {
+            event.preventDefault();
+            
+            // Cancel previous request if exists
+            if (currentSearchAbortController) {
+                currentSearchAbortController.abort();
+            }
+            
+            currentSearchAbortController = new AbortController();
+            
+            const searchTerm = document.getElementById('searchTerm').value.trim();
+            const loading = document.getElementById('loadingSearch');
+            const errorMessage = document.getElementById('errorMessageSearch');
+            const booksList = document.getElementById('booksList');
+            const booksListContent = document.getElementById('booksListContent');
+            const booksListTitle = document.getElementById('booksListTitle');
+            const searchButton = document.getElementById('searchBooksButton');
+            const cancelButton = document.getElementById('cancelSearchBooksButton');
+            
+            // Hide previous results
+            errorMessage.classList.remove('show');
+            booksList.classList.remove('show');
+            loading.classList.add('show');
+            searchButton.style.display = 'none';
+            cancelButton.style.display = 'block';
+            
+            try {
+                const response = await fetch(`/api/books/search?term=${encodeURIComponent(searchTerm)}`, {
+                    signal: currentSearchAbortController.signal
+                });
+                
+                if (!response.ok) {
+                    throw new Error('خطا در دریافت اطلاعات کتاب‌ها.');
+                }
+                
+                const books = await response.json();
+                
+                loading.classList.remove('show');
+                
+                if (books.length === 0) {
+                    booksListContent.innerHTML = '<div class="no-results">کتابی با این عبارت یافت نشد.</div>';
+                    booksListTitle.textContent = `نتیجه جستجو برای: "${searchTerm}"`;
+                    booksList.classList.add('show');
+                    searchButton.style.display = 'block';
+                    cancelButton.style.display = 'none';
+                    currentSearchAbortController = null;
+                    return;
+                }
+                
+                // Display books list
+                booksListTitle.textContent = `نتایج جستجو برای: "${searchTerm}" (${books.length} مورد)`;
+                booksListContent.innerHTML = books.map(book => `
+                    <div class="book-item">
+                        <div class="book-item-title">${escapeHtml(book.name)}</div>
+                        <div class="book-item-details">
+                            <span class="book-item-price">${formatPrice(book.price)} تومان</span>
+                            <span class="book-item-id">شناسه: ${book.id}</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                booksList.classList.add('show');
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentSearchAbortController = null;
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    errorMessage.textContent = 'جستجو لغو شد.';
+                    loading.classList.remove('show');
+                } else {
+                    loading.classList.remove('show');
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                }
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentSearchAbortController = null;
+            }
+        }
+
+        function cancelSearchBooks() {
+            if (currentSearchAbortController) {
+                currentSearchAbortController.abort();
+                currentSearchAbortController = null;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function searchBooksStream(event) {
+            event.preventDefault();
+            
+            // Cancel previous request if exists
+            if (currentStreamAbortController) {
+                currentStreamAbortController.abort();
+            }
+            
+            currentStreamAbortController = new AbortController();
+            
+            const searchTerm = document.getElementById('searchTermStream').value.trim();
+            const loading = document.getElementById('loadingStream');
+            const errorMessage = document.getElementById('errorMessageStream');
+            const booksList = document.getElementById('booksStreamList');
+            const booksListContent = document.getElementById('booksStreamListContent');
+            const booksListTitle = document.getElementById('booksStreamListTitle');
+            const searchButton = document.getElementById('searchBooksStreamButton');
+            const cancelButton = document.getElementById('cancelSearchBooksStreamButton');
+            
+            // Hide previous results
+            errorMessage.classList.remove('show');
+            booksList.classList.remove('show');
+            booksListContent.innerHTML = '';
+            loading.classList.add('show');
+            searchButton.style.display = 'none';
+            cancelButton.style.display = 'block';
+            booksListTitle.textContent = `در حال دریافت نتایج برای: "${searchTerm}"`;
+            booksList.classList.add('show');
+            
+            let bookCount = 0;
+            
+            try {
+                const response = await fetch(`/api/books/search/stream?term=${encodeURIComponent(searchTerm)}`, {
+                    signal: currentStreamAbortController.signal,
+                    headers: {
+                        'Accept': 'application/x-ndjson'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('خطا در دریافت اطلاعات کتاب‌ها.');
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const book = JSON.parse(line);
+                                console.log(book);
+                                bookCount++;
+                                
+                                // Add book to list immediately
+                                const bookElement = document.createElement('div');
+                                bookElement.className = 'book-item';
+                                bookElement.innerHTML = `
+                                    <div class="book-item-title">${escapeHtml(book.Name)}</div>
+                                    <div class="book-item-details">
+                                        <span class="book-item-price">${formatPrice(book.Price)} تومان</span>
+                                        <span class="book-item-id">شناسه: ${book.Id}</span>
+                                    </div>
+                                `;
+                                booksListContent.appendChild(bookElement);
+                                
+                                // Update title with count
+                                booksListTitle.textContent = `نتایج جستجو برای: "${searchTerm}" (${bookCount} مورد دریافت شده)`;
+                                
+                                // Scroll to bottom to show new items
+                                bookElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                            } catch (e) {
+                                console.error('Error parsing JSON:', e);
+                            }
+                        }
+                    }
+                }
+
+                // Handle remaining buffer
+                if (buffer.trim()) {
+                    try {
+                        const book = JSON.parse(buffer);
+                        bookCount++;
+                        const bookElement = document.createElement('div');
+                        bookElement.className = 'book-item';
+                        bookElement.innerHTML = `
+                            <div class="book-item-title">${escapeHtml(book.name)}</div>
+                            <div class="book-item-details">
+                                <span class="book-item-price">${formatPrice(book.price)} تومان</span>
+                                <span class="book-item-id">شناسه: ${book.id}</span>
+                            </div>
+                        `;
+                        booksListContent.appendChild(bookElement);
+                    } catch (e) {
+                        console.error('Error parsing final JSON:', e);
+                    }
+                }
+
+                loading.classList.remove('show');
+                booksListTitle.textContent = `نتایج جستجو برای: "${searchTerm}" (${bookCount} مورد)`;
+                
+                if (bookCount === 0) {
+                    booksListContent.innerHTML = '<div class="no-results">کتابی با این عبارت یافت نشد.</div>';
+                }
+                
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentStreamAbortController = null;
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    errorMessage.textContent = 'جستجو لغو شد.';
+                    loading.classList.remove('show');
+                } else {
+                    loading.classList.remove('show');
+                    errorMessage.textContent = error.message;
+                    errorMessage.classList.add('show');
+                }
+                searchButton.style.display = 'block';
+                cancelButton.style.display = 'none';
+                currentStreamAbortController = null;
+            }
+        }
+
+        function cancelSearchBooksStream() {
+            if (currentStreamAbortController) {
+                currentStreamAbortController.abort();
+                currentStreamAbortController = null;
+            }
+        }
+    </script>
+</body>
+</html>
+

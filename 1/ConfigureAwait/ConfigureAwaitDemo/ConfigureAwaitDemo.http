@@ -1,0 +1,50 @@
+@ConfigureAwaitDemo_HostAddress = http://localhost:5002
+
+GET {{ConfigureAwaitDemo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+# ConfigureAwait Demonstration Tests
+
+### Test with ConfigureAwait(false)
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/with
+Accept: application/json
+
+###
+
+### Test without ConfigureAwait
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/without
+Accept: application/json
+
+###
+
+### Good simulation (with ConfigureAwait)
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/simulation/good
+Accept: application/json
+
+###
+
+### Bad simulation (without ConfigureAwait)
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/simulation/bad
+Accept: application/json
+
+###
+
+### Load test with 50 concurrent operations
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/loadtest/50
+Accept: application/json
+
+###
+
+### Performance comparison test (10 iterations)
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/performance/comparison/10
+Accept: application/json
+
+###
+
+### Heavy load test with 200 concurrent operations
+GET {{ConfigureAwaitDemo_HostAddress}}/configureawait/loadtest/200
+Accept: application/json
+
+###

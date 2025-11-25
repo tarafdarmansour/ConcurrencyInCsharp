@@ -1,0 +1,424 @@
+@using ObservableUI.Services
+@using System.Reactive.Linq
+@inject ErrorHandlingService ErrorHandlingService
+@implements IDisposable
+
+<div class="error-handling-section">
+    <h3 class="section-title">🛡️ مدیریت خطا / Error Handling</h3>
+
+    <div class="controls">
+        <button class="btn btn-primary" @onclick="StartApiRequests">
+            @(isApiRequestsActive ? "توقف درخواست‌های API" : "شروع درخواست‌های API") /
+            @(isApiRequestsActive ? "Stop API Requests" : "Start API Requests")
+        </button>
+
+        <button class="btn btn-success" @onclick="StartDbOperations">
+            @(isDbOperationsActive ? "توقف عملیات دیتابیس" : "شروع عملیات دیتابیس") /
+            @(isDbOperationsActive ? "Stop DB Operations" : "Start DB Operations")
+        </button>
+
+        <button class="btn btn-warning" @onclick="StartFileOperations">
+            @(isFileOperationsActive ? "توقف عملیات فایل" : "شروع عملیات فایل") /
+            @(isFileOperationsActive ? "Stop File Operations" : "Start File Operations")
+        </button>
+    </div>
+
+    <div class="data-display">
+        @if (apiResults.Any())
+        {
+            <div class="data-panel">
+                <h4>🌐 نتایج API با مدیریت خطا / API Results with Error Handling</h4>
+                <div class="data-list">
+                    @foreach (var result in apiResults.Take(8))
+                    {
+                        <div class="data-item api-item @(result.StatusCode >= 400 ? "error" : "success")">
+                            <strong>@result.RequestId</strong>
+                            <span class="status">@result.StatusCode</span>
+                            <span>@result.Message</span>
+                            <small>@result.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (dbResults.Any())
+        {
+            <div class="data-panel">
+                <h4>💾 نتایج دیتابیس با Fallback / DB Results with Fallback</h4>
+                <div class="data-list">
+                    @foreach (var result in dbResults.Take(8))
+                    {
+                        <div class="data-item db-item @(result.Success ? "success" : "error")">
+                            <strong>@result.OperationId</strong>
+                            <span>@result.Message</span>
+                            <small>@result.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (fileResults.Any())
+        {
+            <div class="data-panel">
+                <h4>📁 نتایج فایل با مدیریت پیشرفته خطا / File Results with Advanced Error Handling</h4>
+                <div class="data-list">
+                    @foreach (var result in fileResults.Take(8))
+                    {
+                        <div class="data-item file-item @(result.Success ? "success" : "error")">
+                            <strong>@result.OperationId</strong>
+                            <span>@result.Message</span>
+                            <small>@result.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (combinedOperations.Any())
+        {
+            <div class="data-panel">
+                <h4>🔗 عملیات ترکیبی با زنجیره مدیریت خطا / Combined Operations with Chained Error Handling</h4>
+                <div class="data-list">
+                    @foreach (var operation in combinedOperations.Take(10))
+                    {
+                        <div class="data-item combined-item @(operation.Success ? "success" : "error")">
+                            <span class="operation-type">@operation.Type</span>
+                            <strong>@operation.Id</strong>
+                            <span>@operation.Message</span>
+                            <small>@operation.Timestamp.ToString("HH:mm:ss")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="error-stats">
+        <div class="stat-card">
+            <h5>آمار خطاها / Error Statistics</h5>
+            <div class="stats-grid">
+                <div class="stat">
+                    <span class="label">کل عملیات API / Total API Operations:</span>
+                    <span class="value">@apiResults.Count</span>
+                </div>
+                <div class="stat">
+                    <span class="label">خطاهای API / API Errors:</span>
+                    <span class="value error">@apiResults.Count(r => r.StatusCode >= 400)</span>
+                </div>
+                <div class="stat">
+                    <span class="label">موفقیت‌های API / API Successes:</span>
+                    <span class="value success">@apiResults.Count(r => r.StatusCode < 400)</span>
+                </div>
+                <div class="stat">
+                    <span class="label">کل عملیات دیتابیس / Total DB Operations:</span>
+                    <span class="value">@dbResults.Count</span>
+                </div>
+                <div class="stat">
+                    <span class="label">خطاهای دیتابیس / DB Errors:</span>
+                    <span class="value error">@dbResults.Count(r => !r.Success)</span>
+                </div>
+                <div class="stat">
+                    <span class="label">کل عملیات فایل / Total File Operations:</span>
+                    <span class="value">@fileResults.Count</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <p>
+            <strong>مفاهیم نمایش داده شده:</strong><br>
+            - Catch برای مدیریت خطای ساده<br>
+            - Retry برای تلاش مجدد<br>
+            - OnErrorResumeNext برای استراتژی Fallback<br>
+            - زنجیره مدیریت خطا با چندین Catch<br>
+            - نمایش خطاها در UI
+        </p>
+        <p>
+            <strong>Concepts demonstrated:</strong><br>
+            - Catch for simple error handling<br>
+            - Retry for retry logic<br>
+            - OnErrorResumeNext for fallback strategy<br>
+            - Chained error handling with multiple Catch<br>
+            - Error display in UI
+        </p>
+    </div>
+</div>
+
+<style>
+.error-handling-section {
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+.section-title {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.btn-primary { background-color: #007bff; color: white; }
+.btn-primary:hover { background-color: #0056b3; }
+
+.btn-success { background-color: #28a745; color: white; }
+.btn-success:hover { background-color: #1e7e34; }
+
+.btn-warning { background-color: #ffc107; color: black; }
+.btn-warning:hover { background-color: #e0a800; }
+
+.data-display {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.data-panel {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-panel h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 5px;
+}
+
+.data-list {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.data-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 4px 0;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #6c757d;
+}
+
+.api-item { border-left-color: #007bff; }
+.db-item { border-left-color: #28a745; }
+.file-item { border-left-color: #ffc107; }
+.combined-item { border-left-color: #6f42c1; }
+
+.data-item.success { background-color: #d4edda; border-left-color: #28a745; }
+.data-item.error { background-color: #f8d7da; border-left-color: #dc3545; }
+
+.status {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.status:contains("200"), .status:contains("201") { background-color: #d4edda; color: #155724; }
+.status:contains("400"), .status:contains("500") { background-color: #f8d7da; color: #721c24; }
+
+.operation-type {
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.error-stats {
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card h5 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    border-bottom: 2px solid #dc3545;
+    padding-bottom: 5px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.stat .label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.stat .value {
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.stat .value.success { color: #28a745; }
+.stat .value.error { color: #dc3545; }
+
+.data-item small {
+    color: #6c757d;
+    font-size: 0.8em;
+}
+
+.info-panel {
+    background: #e7f3ff;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.info-panel p {
+    margin: 5px 0;
+    line-height: 1.6;
+}
+</style>
+
+@code {
+    private List<ApiResult> apiResults = new();
+    private List<DbResult> dbResults = new();
+    private List<FileResult> fileResults = new();
+    private List<OperationResult> combinedOperations = new();
+
+    private bool isApiRequestsActive;
+    private bool isDbOperationsActive;
+    private bool isFileOperationsActive;
+
+    private IDisposable? apiResultsSubscription;
+    private IDisposable? dbResultsSubscription;
+    private IDisposable? fileResultsSubscription;
+    private IDisposable? combinedOperationsSubscription;
+
+    protected override void OnInitialized()
+    {
+        // Initialize subscriptions
+        apiResultsSubscription = ErrorHandlingService.ApiRequestsWithCatch.Subscribe(result =>
+        {
+            InvokeAsync(() =>
+            {
+                apiResults.Insert(0, result);
+                if (apiResults.Count > 20) apiResults.RemoveAt(20);
+                StateHasChanged();
+            });
+        });
+
+        dbResultsSubscription = ErrorHandlingService.DbOperationsWithFallback.Subscribe(result =>
+        {
+            InvokeAsync(() =>
+            {
+                dbResults.Insert(0, result);
+                if (dbResults.Count > 20) dbResults.RemoveAt(20);
+                StateHasChanged();
+            });
+        });
+
+        fileResultsSubscription = ErrorHandlingService.FileOperationsAdvanced.Subscribe(result =>
+        {
+            InvokeAsync(() =>
+            {
+                fileResults.Insert(0, result);
+                if (fileResults.Count > 20) fileResults.RemoveAt(20);
+                StateHasChanged();
+            });
+        });
+
+        combinedOperationsSubscription = ErrorHandlingService.CombinedOperationsWithChain.Subscribe(operation =>
+        {
+            InvokeAsync(() =>
+            {
+                combinedOperations.Insert(0, operation);
+                if (combinedOperations.Count > 25) combinedOperations.RemoveAt(25);
+                StateHasChanged();
+            });
+        });
+    }
+
+    private void StartApiRequests()
+    {
+        if (isApiRequestsActive)
+        {
+            isApiRequestsActive = false;
+        }
+        else
+        {
+            ErrorHandlingService.StartApiRequestsWithErrors();
+            isApiRequestsActive = true;
+        }
+    }
+
+    private void StartDbOperations()
+    {
+        if (isDbOperationsActive)
+        {
+            isDbOperationsActive = false;
+        }
+        else
+        {
+            ErrorHandlingService.StartDatabaseOperations();
+            isDbOperationsActive = true;
+        }
+    }
+
+    private void StartFileOperations()
+    {
+        if (isFileOperationsActive)
+        {
+            isFileOperationsActive = false;
+        }
+        else
+        {
+            ErrorHandlingService.StartFileOperations();
+            isFileOperationsActive = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        apiResultsSubscription?.Dispose();
+        dbResultsSubscription?.Dispose();
+        fileResultsSubscription?.Dispose();
+        combinedOperationsSubscription?.Dispose();
+    }
+}
+

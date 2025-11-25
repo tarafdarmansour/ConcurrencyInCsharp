@@ -1,0 +1,124 @@
+@model ParallelProcessingDemo.Models.ParallelDemoViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>@Model.Title</h1>
+                    <p class="lead">@Model.Description</p>
+                </div>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> بازگشت به خانه
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">روش پردازش</h5>
+                    <p class="card-text">@Model.ParallelMethod</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان اجرای موازی</h5>
+                    <p class="card-text">@Model.ExecutionTime ms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان اجرای متوالی</h5>
+                    <p class="card-text">@Model.SequentialExecutionTime ms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">تعداد فایل‌ها</h5>
+                    <p class="card-text">@Model.ParallelResults?.Count</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">نتایج پردازش فایل‌ها</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>نام فایل</th>
+                                    <th>اندازه (بایت)</th>
+                                    <th>زمان پردازش (ms)</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ParallelResults != null)
+                                {
+                                    foreach (var result in Model.ParallelResults)
+                                    {
+                                        <tr>
+                                            <td>@result.FileName</td>
+                                            <td>@result.ProcessedSize.ToString("N0")</td>
+                                            <td>@result.ProcessingTime</td>
+                                            <td>
+                                                @if (result.Success)
+                                                {
+                                                    <span class="badge bg-success">موفق</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">ناموفق</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">کد استفاده شده</h5>
+                </div>
+                <div class="card-body">
+                    <pre><code class="language-csharp">// Parallel.ForEach Example
+var files = GenerateSampleFiles(100);
+var processedFiles = new ConcurrentBag&lt;FileProcessingResult&gt;();
+
+Parallel.ForEach(files, file =>
+{
+    var result = ProcessFile(file);
+    processedFiles.Add(result);
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

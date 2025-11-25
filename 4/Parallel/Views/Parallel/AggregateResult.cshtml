@@ -1,0 +1,108 @@
+@model ParallelProcessingDemo.Models.ParallelDemoViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>@Model.Title</h1>
+                    <p class="lead">@Model.Description</p>
+                </div>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> بازگشت به خانه
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">روش پردازش</h5>
+                    <p class="card-text">@Model.ParallelMethod</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان اجرا</h5>
+                    <p class="card-text">@Model.ExecutionTime ms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.AggregateStats != null)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">آمار محاسبه شده</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white text-center">
+                                    <div class="card-body">
+                                        <h4>@Model.AggregateStats.Count.ToString("N0")</h4>
+                                        <p class="mb-0">تعداد اعداد</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white text-center">
+                                    <div class="card-body">
+                                        <h4>@Model.AggregateStats.Sum.ToString("N0")</h4>
+                                        <p class="mb-0">مجموع</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white text-center">
+                                    <div class="card-body">
+                                        <h4>@Model.AggregateStats.Average.ToString("F2")</h4>
+                                        <p class="mb-0">میانگین</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-danger text-white text-center">
+                                    <div class="card-body">
+                                        <h4>@Model.AggregateStats.Min - @Model.AggregateStats.Max</h4>
+                                        <p class="mb-0">حداقل - حداکثر</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">کد استفاده شده</h5>
+                </div>
+                <div class="card-body">
+                    <pre><code class="language-csharp">// AsParallel().Aggregate Example
+var stats = numbers.AsParallel().Aggregate(
+    seed: new NumberStats(),
+    func: (acc, num) => acc.Add(num),
+    resultSelector: final => final,
+    combiner: (left, right) => left.Combine(right)
+);</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

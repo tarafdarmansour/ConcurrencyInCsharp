@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کتاب‌های Python - Reactive</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .status-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .books-list {
+            margin-top: 20px;
+        }
+
+        .books-list h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .book-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 2px solid #e0e0e0;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .book-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .book-item.new {
+            border-color: #28a745;
+            animation: highlight 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes highlight {
+            0% {
+                background: #d4edda;
+                border-color: #28a745;
+            }
+            100% {
+                background: #f8f9fa;
+                border-color: #e0e0e0;
+            }
+        }
+
+        .book-item-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .book-item-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .book-item-price {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .book-item-id {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .no-books {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .update-info {
+            text-align: center;
+            padding: 10px;
+            color: #28a745;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← بازگشت به صفحه اصلی</a>
+        
+        <h1>🐍 کتاب‌های Python</h1>
+        <p class="subtitle">لیست به‌صورت خودکار به‌روزرسانی می‌شود</p>
+
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">در حال اتصال...</span>
+        </div>
+
+        <div class="books-list">
+            <h2 id="booksTitle">کتاب‌های Python</h2>
+            <div id="booksContent"></div>
+            <div class="update-info" id="updateInfo" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let connection = null;
+        let lastUpdateTime = null;
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('fa-IR').format(price);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateStatus(connected) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (connected) {
+                statusDot.classList.add('connected');
+                statusText.textContent = 'متصل - به‌روزرسانی خودکار فعال است';
+            } else {
+                statusDot.classList.remove('connected');
+                statusText.textContent = 'قطع شده';
+            }
+        }
+
+        function displayBooks(books) {
+            const booksContent = document.getElementById('booksContent');
+            const booksTitle = document.getElementById('booksTitle');
+            const updateInfo = document.getElementById('updateInfo');
+            
+            console.log("Received books data:", books);
+            console.log("Type:", typeof books);
+            console.log("Is Array:", Array.isArray(books));
+            
+            // Ensure books is an array
+            if (!books) {
+                books = [];
+            } else if (!Array.isArray(books)) {
+                // If it's not an array, try to convert it
+                books = Object.values(books);
+            }
+            
+            if (books.length === 0) {
+                booksContent.innerHTML = '<div class="no-books">کتابی با نام Python یافت نشد.</div>';
+                booksTitle.textContent = 'کتاب‌های Python (0 مورد)';
+                updateInfo.style.display = 'none';
+                return;
+            }
+
+            booksTitle.textContent = `کتاب‌های Python (${books.length} مورد)`;
+            
+            // Get current book IDs for comparison
+            const currentBookIds = Array.from(booksContent.children)
+                .map(el => el.dataset.bookId)
+                .filter(id => id);
+            
+            // Clear and rebuild
+            booksContent.innerHTML = '';
+            
+            books.forEach(book => {
+                console.log("Processing book:", book);
+                
+                // Handle both Id and id (case sensitivity)
+                const bookId = book.Id || book.id;
+                const bookName = book.Name || book.name;
+                const bookPrice = book.Price || book.price;
+                
+                if (!bookId || !bookName) {
+                    console.warn("Invalid book data:", book);
+                    return;
+                }
+                
+                const isNew = !currentBookIds.includes(bookId.toString());
+                
+                const bookElement = document.createElement('div');
+                bookElement.className = 'book-item' + (isNew ? ' new' : '');
+                bookElement.dataset.bookId = bookId;
+                bookElement.innerHTML = `
+                    <div class="book-item-title">${escapeHtml(bookName)}</div>
+                    <div class="book-item-details">
+                        <span class="book-item-price">${formatPrice(bookPrice)} تومان</span>
+                        <span class="book-item-id">شناسه: ${bookId}</span>
+                    </div>
+                `;
+                booksContent.appendChild(bookElement);
+            });
+
+            // Show update info
+            lastUpdateTime = new Date();
+            updateInfo.textContent = `آخرین به‌روزرسانی: ${lastUpdateTime.toLocaleTimeString('fa-IR')}`;
+            updateInfo.style.display = 'block';
+        }
+
+        async function startConnection() {
+            try {
+                connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/booksHub")
+                    .withAutomaticReconnect()
+                    .build();
+
+                // Handle reconnection
+                connection.onreconnecting(() => {
+                    updateStatus(false);
+                });
+
+                connection.onreconnected(() => {
+                    updateStatus(true);
+                    connection.invoke("SubscribeToPythonBooks");
+                });
+
+                // Handle Python books updates
+                connection.on("PythonBooksUpdated", (books) => {
+                    console.log("Python books updated:", books);
+                    displayBooks(books);
+                });
+
+                // Start connection
+                await connection.start();
+                updateStatus(true);
+
+                // Subscribe to Python books
+                await connection.invoke("SubscribeToPythonBooks");
+                
+            } catch (error) {
+                console.error("Error starting connection:", error);
+                updateStatus(false);
+                
+                // Retry after 3 seconds
+                setTimeout(startConnection, 3000);
+            }
+        }
+
+        // Handle connection close
+        if (connection) {
+            connection.onclose(() => {
+                updateStatus(false);
+                // Retry connection
+                setTimeout(startConnection, 3000);
+            });
+        }
+
+        // Start connection when page loads
+        window.addEventListener('load', startConnection);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (connection) {
+                connection.stop();
+            }
+        });
+    </script>
+</body>
+</html>
+

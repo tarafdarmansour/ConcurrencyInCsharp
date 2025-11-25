@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObservableWebApi", "ObservableWebApi\ObservableWebApi.csproj", "{9D66F2B8-79ED-F444-D0E2-C6E3A8E86C5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObservableUI", "ObservableUI\ObservableUI.csproj", "{76591829-BD0F-227A-2226-76F6FE7765F0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9D66F2B8-79ED-F444-D0E2-C6E3A8E86C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D66F2B8-79ED-F444-D0E2-C6E3A8E86C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D66F2B8-79ED-F444-D0E2-C6E3A8E86C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D66F2B8-79ED-F444-D0E2-C6E3A8E86C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76591829-BD0F-227A-2226-76F6FE7765F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76591829-BD0F-227A-2226-76F6FE7765F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76591829-BD0F-227A-2226-76F6FE7765F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76591829-BD0F-227A-2226-76F6FE7765F0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5AB6F416-E2B1-4707-8B70-4A0BE91918F7}
+	EndGlobalSection
+EndGlobal

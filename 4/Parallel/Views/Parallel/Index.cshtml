@@ -1,0 +1,115 @@
+@model ParallelProcessingDemo.Models.ParallelDemoViewModel
+
+@{
+    ViewData["Title"] = "Parallel Processing Demonstrations";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Parallel Processing in .NET</h1>
+            <p class="lead mb-4">
+                این پروژه مثال‌های کاربردی از پردازش موازی در دات نت را نمایش می‌دهد.
+                هر کدام از تکنیک‌های Parallel.ForEach، AsParallel().Aggregate، Parallel.Invoke و PLINQ را می‌توانید مشاهده کنید.
+            </p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list"></i> Parallel.ForEach
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        پردازش مجموعه‌ای از فایل‌ها به صورت موازی با استفاده از Parallel.ForEach.
+                        این مثال نشان می‌دهد چگونه می‌توان عملیات I/O را به صورت همزمان انجام داد.
+                    </p>
+                    <a href="@Url.Action("ForEachDemo")" class="btn btn-primary">
+                        مشاهده مثال
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calculator"></i> AsParallel().Aggregate
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        محاسبه آمار داده‌های بزرگ با استفاده از AsParallel().Aggregate.
+                        این مثال تجمیع موازی داده‌ها را نشان می‌دهد.
+                    </p>
+                    <a href="@Url.Action("AggregateDemo")" class="btn btn-success">
+                        مشاهده مثال
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tasks"></i> Parallel.Invoke
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        اجرای چندین عملیات مستقل به صورت همزمان با Parallel.Invoke.
+                        این مثال اجرای وظایف مختلف را به صورت موازی نشان می‌دهد.
+                    </p>
+                    <a href="@Url.Action("InvokeDemo")" class="btn btn-warning">
+                        مشاهده مثال
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search"></i> PLINQ
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        پرس و جو از داده‌ها با استفاده از Parallel LINQ (PLINQ).
+                        این مثال پردازش داده‌های بزرگ با LINQ موازی را نشان می‌دهد.
+                    </p>
+                    <a href="@Url.Action("PlinqDemo")" class="btn btn-info">
+                        مشاهده مثال
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar"></i> مقایسه عملکرد
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        مقایسه عملکرد پردازش ترتیبی در مقابل پردازش موازی بر روی مجموعه داده‌های بزرگ.
+                    </p>
+                    <a href="@Url.Action("PerformanceComparison")" class="btn btn-secondary">
+                        مشاهده مقایسه
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,89 @@
+@model ParallelProcessingDemo.Models.ParallelDemoViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>@Model.Title</h1>
+                    <p class="lead">@Model.Description</p>
+                </div>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> بازگشت به خانه
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">روش پردازش</h5>
+                    <p class="card-text">@Model.ParallelMethod</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان اجرا</h5>
+                    <p class="card-text">@Model.ExecutionTime ms</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">نتایج اجرای موازی وظایف</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.InvokeResults != null)
+                    {
+                        <div class="row">
+                            @foreach (var result in Model.InvokeResults)
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <p class="card-text">@result</p>
+                                            <div class="text-end">
+                                                <span class="badge bg-success">تکمیل شده</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">کد استفاده شده</h5>
+                </div>
+                <div class="card-body">
+                    <pre><code class="language-csharp">// Parallel.Invoke Example
+Parallel.Invoke(
+    () => results.Add($"Task 1: {PerformDatabaseOperation()}"),
+    () => results.Add($"Task 2: {PerformApiCall()}"),
+    () => results.Add($"Task 3: {ProcessImages()}"),
+    () => results.Add($"Task 4: {SendNotifications()}")
+);</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,213 @@
+@model ParallelProcessingDemo.Models.PerformanceComparisonViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1>@Model.Title</h1>
+                    <p class="lead">مقایسه عملکرد پردازش ترتیبی در مقابل پردازش موازی</p>
+                </div>
+                <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left"></i> بازگشت به خانه
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان پردازش ترتیبی</h5>
+                    <h3 class="text-primary">@Model.SequentialTime ms</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان پردازش موازی</h5>
+                    <h3>@Model.ParallelTime ms</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">سرعت بهبود</h5>
+                    <h3>@Model.Speedup.ToString("F2")x</h3>
+                    <small>دفعات سریع‌تر</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Comparison -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">پردازش ترتیبی</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.SequentialStats != null)
+                    {
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>تعداد اعداد:</span>
+                                <strong>@Model.SequentialStats.Count.ToString("N0")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>مجموع:</span>
+                                <strong>@Model.SequentialStats.Sum.ToString("N0")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>میانگین:</span>
+                                <strong>@Model.SequentialStats.Average.ToString("F2")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>حداقل:</span>
+                                <strong>@Model.SequentialStats.Min</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>حداکثر:</span>
+                                <strong>@Model.SequentialStats.Max</strong>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">پردازش موازی</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ParallelStats != null)
+                    {
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>تعداد اعداد:</span>
+                                <strong>@Model.ParallelStats.Count.ToString("N0")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>مجموع:</span>
+                                <strong>@Model.ParallelStats.Sum.ToString("N0")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>میانگین:</span>
+                                <strong>@Model.ParallelStats.Average.ToString("F2")</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>حداقل:</span>
+                                <strong>@Model.ParallelStats.Min</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>حداکثر:</span>
+                                <strong>@Model.ParallelStats.Max</strong>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Chart -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">نمودار مقایسه عملکرد</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Examples -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">مقایسه کد</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>پردازش ترتیبی</h6>
+                            <pre><code class="language-csharp">// Sequential Processing
+var sum = numbers.Sum();
+var stats = CalculateStatsSequentially(numbers);</code></pre>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>پردازش موازی</h6>
+                            <pre><code class="language-csharp">// Parallel Processing
+var sum = numbers.AsParallel().Sum();
+var stats = numbers.AsParallel().Aggregate(
+    seed: new NumberStats(),
+    func: (acc, num) => acc.Add(num),
+    resultSelector: final => final,
+    combiner: (left, right) => left.Combine(right)
+);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['پردازش ترتیبی', 'پردازش موازی'],
+                datasets: [{
+                    label: 'زمان اجرا (ms)',
+                    data: [@Model.SequentialTime, @Model.ParallelTime],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'زمان اجرا (میلی‌ثانیه)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'مقایسه زمان اجرای پردازش ترتیبی و موازی'
+                    }
+                }
+            }
+        });
+    </script>
+}
