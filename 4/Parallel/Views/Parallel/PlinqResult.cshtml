@@ -20,7 +20,7 @@
     </div>
 
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="card bg-light">
                 <div class="card-body text-center">
                     <h5 class="card-title">روش پردازش</h5>
@@ -28,15 +28,81 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h5 class="card-title">زمان اجرای ترتیبی</h5>
+                    <p class="card-text fs-4">@Model.SequentialExecutionTime ms</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
-                    <h5 class="card-title">زمان اجرا</h5>
-                    <p class="card-text">@Model.ExecutionTime ms</p>
+                    <h5 class="card-title">زمان اجرای موازی</h5>
+                    <p class="card-text fs-4">@Model.ExecutionTime ms</p>
                 </div>
             </div>
         </div>
     </div>
+
+    @{
+        var speedup = Model.SequentialExecutionTime > 0 
+            ? (double)Model.SequentialExecutionTime / Model.ExecutionTime 
+            : 0;
+        var improvement = Model.SequentialExecutionTime > 0 
+            ? ((double)(Model.SequentialExecutionTime - Model.ExecutionTime) / Model.SequentialExecutionTime * 100) 
+            : 0;
+    }
+
+    @if (Model.SequentialExecutionTime > 0 && Model.ExecutionTime > 0)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line"></i> مقایسه عملکرد
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <h6 class="text-muted">سرعت بهبود</h6>
+                                <h3 class="text-success">@speedup.ToString("F2")x</h3>
+                                <small class="text-muted">@(speedup > 1 ? "موازی سریع‌تر است" : "ترتیبی سریع‌تر است")</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6 class="text-muted">صرفه‌جویی زمان</h6>
+                                <h3 class="text-primary">@((Model.SequentialExecutionTime - Model.ExecutionTime)) ms</h3>
+                                <small class="text-muted">@improvement.ToString("F1")% بهبود</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <h6 class="text-muted">کاهش زمان</h6>
+                                <h3 class="text-info">@improvement.ToString("F1")%</h3>
+                                <small class="text-muted">نسبت به اجرای ترتیبی</small>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: @(speedup > 1 ? (1 / speedup * 100) : 100)%" 
+                                 aria-valuenow="@(speedup > 1 ? (1 / speedup * 100) : 100)" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                <strong>ترتیبی: @Model.SequentialExecutionTime ms</strong>
+                            </div>
+                            <div class="progress-bar bg-info" role="progressbar" 
+                                 style="width: @(speedup > 1 ? ((speedup - 1) / speedup * 100) : 0)%" 
+                                 aria-valuenow="@(speedup > 1 ? ((speedup - 1) / speedup * 100) : 0)" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                <strong>موازی: @Model.ExecutionTime ms</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-6">

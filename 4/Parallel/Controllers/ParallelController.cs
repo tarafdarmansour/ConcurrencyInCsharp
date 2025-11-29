@@ -121,12 +121,34 @@ public class ParallelController : Controller
             Description = "Querying and processing data using parallel LINQ operations"
         };
 
-        var stopwatch = Stopwatch.StartNew();
-
         // Generate customer data
-        var customers = GenerateCustomerData(50000);
+        var customers = GenerateCustomerData(5000000);
 
-        // PLINQ query with parallel processing
+        // Sequential processing
+        var sequentialStopwatch = Stopwatch.StartNew();
+        
+        var sequentialHighValueCustomers = customers
+            .Where(c => c.TotalPurchases > 5000)
+            .OrderByDescending(c => c.TotalPurchases)
+            .Take(10)
+            .ToList();
+
+        var sequentialAverageByRegion = customers
+            .GroupBy(c => c.Region)
+            .Select(g => new RegionStat
+            {
+                Region = g.Key,
+                AveragePurchase = g.Average(c => c.TotalPurchases),
+                CustomerCount = g.Count()
+            })
+            .OrderByDescending(r => r.AveragePurchase)
+            .ToList();
+
+        sequentialStopwatch.Stop();
+
+        // Parallel processing (PLINQ)
+        var parallelStopwatch = Stopwatch.StartNew();
+
         var highValueCustomers = customers
             .AsParallel()
             .Where(c => c.TotalPurchases > 5000)
@@ -146,11 +168,12 @@ public class ParallelController : Controller
             .OrderByDescending(r => r.AveragePurchase)
             .ToList();
 
-        stopwatch.Stop();
+        parallelStopwatch.Stop();
 
         model.PlinqResults = highValueCustomers;
         model.RegionStats = averageByRegion;
-        model.ExecutionTime = stopwatch.ElapsedMilliseconds;
+        model.ExecutionTime = parallelStopwatch.ElapsedMilliseconds;
+        model.SequentialExecutionTime = sequentialStopwatch.ElapsedMilliseconds;
         model.ParallelMethod = "PLINQ";
 
         return View("PlinqResult", model);
