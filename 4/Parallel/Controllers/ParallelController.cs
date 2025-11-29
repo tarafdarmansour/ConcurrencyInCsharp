@@ -122,7 +122,7 @@ public class ParallelController : Controller
         };
 
         // Generate customer data
-        var customers = GenerateCustomerData(5000000);
+        var customers = GenerateCustomerData(500000);
 
         // Sequential processing
         var sequentialStopwatch = Stopwatch.StartNew();
@@ -175,6 +175,54 @@ public class ParallelController : Controller
         model.ExecutionTime = parallelStopwatch.ElapsedMilliseconds;
         model.SequentialExecutionTime = sequentialStopwatch.ElapsedMilliseconds;
         model.ParallelMethod = "PLINQ";
+
+        // Example 3: CPU-Bound Processing - Factorial and Complex Calculations
+        var numbers = Enumerable.Range(1, 100000).ToList();
+        
+        // Sequential CPU-bound processing
+        var sequentialCpuStopwatch = Stopwatch.StartNew();
+        var sequentialFactorialResults = numbers
+            .Select(n => new FactorialResult
+            {
+                Number = n,
+                Factorial = CalculateFactorial(n % 21), // Limit to avoid overflow
+                SumOfDigits = CalculateSumOfDigits(n)
+            })
+            .ToList();
+        sequentialCpuStopwatch.Stop();
+
+        // Parallel CPU-bound processing (PLINQ)
+        var parallelCpuStopwatch = Stopwatch.StartNew();
+        var parallelFactorialResults = numbers
+            .AsParallel()
+            .Select(n => new FactorialResult
+            {
+                Number = n,
+                Factorial = CalculateFactorial(n % 21), // Limit to avoid overflow
+                SumOfDigits = CalculateSumOfDigits(n)
+            })
+            .ToList();
+        parallelCpuStopwatch.Stop();
+
+        var cpuSpeedup = sequentialCpuStopwatch.ElapsedMilliseconds > 0
+            ? (double)sequentialCpuStopwatch.ElapsedMilliseconds / parallelCpuStopwatch.ElapsedMilliseconds
+            : 0;
+        var cpuImprovement = sequentialCpuStopwatch.ElapsedMilliseconds > 0
+            ? ((double)(sequentialCpuStopwatch.ElapsedMilliseconds - parallelCpuStopwatch.ElapsedMilliseconds) 
+               / sequentialCpuStopwatch.ElapsedMilliseconds * 100)
+            : 0;
+
+        model.CpuBoundData = new CpuBoundResult
+        {
+            Title = "CPU-Bound Processing Example",
+            Description = "محاسبه فاکتوریل و مجموع ارقام برای اعداد - این مثال CPU-intensive است و موازی‌سازی در آن بسیار مؤثر است",
+            SequentialTime = sequentialCpuStopwatch.ElapsedMilliseconds,
+            ParallelTime = parallelCpuStopwatch.ElapsedMilliseconds,
+            Speedup = cpuSpeedup,
+            ImprovementPercentage = cpuImprovement,
+            NumbersProcessed = numbers.Count,
+            FactorialResults = parallelFactorialResults.Take(20).ToList() // Show first 20 results
+        };
 
         return View("PlinqResult", model);
     }
@@ -252,7 +300,7 @@ public class ParallelController : Controller
         };
 
         // Test data
-        var numbers = GenerateLargeNumberSet(100000);
+        var numbers = GenerateLargeNumberSet(500000);
 
         // Sequential processing
         var sequentialStopwatch = Stopwatch.StartNew();
@@ -313,17 +361,17 @@ public class ParallelController : Controller
         };
     }
 
-    private List<int> GenerateLargeNumberSet(int count)
+    private List<long> GenerateLargeNumberSet(int count)
     {
-        var numbers = new List<int>(count);
+        var numbers = new List<long>(count);
         for (int i = 0; i < count; i++)
         {
-            numbers.Add(Random.Shared.Next(1, 10000));
+            numbers.Add(Random.Shared.Next(1, 5000));
         }
         return numbers;
     }
 
-    private NumberStats CalculateStatsSequentially(List<int> numbers)
+    private NumberStats CalculateStatsSequentially(List<long> numbers)
     {
         var stats = new NumberStats();
         foreach (var num in numbers)
@@ -440,6 +488,33 @@ public class ParallelController : Controller
         }
 
         log.Add($"[{DateTime.Now:HH:mm:ss.fff}] Completed node {node.Name} and all its children");
+    }
+
+    // CPU-Bound Helper Methods
+    private long CalculateFactorial(int n)
+    {
+        if (n <= 1) return n;
+        
+        long result = 1;
+        for (int i = 2; i <= n; i++)
+        {
+            result *= i;
+            Task.Delay(i);
+        }
+        return result;
+    }
+
+    private long CalculateSumOfDigits(int number)
+    {
+        long sum = 0;
+        int n = number;
+        while (n > 0)
+        {
+            sum += n % 10;
+            n /= 10;
+            Task.Delay(number);
+        }
+        return sum;
     }
 
     #endregion

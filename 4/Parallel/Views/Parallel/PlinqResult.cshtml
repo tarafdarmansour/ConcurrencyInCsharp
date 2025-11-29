@@ -174,11 +174,167 @@
         </div>
     </div>
 
+    <!-- CPU-Bound Example -->
+    @if (Model.CpuBoundData != null)
+    {
+        var cpuData = Model.CpuBoundData;
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-microchip"></i> مثال CPU-Bound: محاسبات ریاضی پیچیده
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">@cpuData.Description</p>
+                        
+                        <!-- CPU-Bound Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white text-center">
+                                    <div class="card-body">
+                                        <h6>زمان ترتیبی</h6>
+                                        <h4>@cpuData.SequentialTime ms</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white text-center">
+                                    <div class="card-body">
+                                        <h6>زمان موازی</h6>
+                                        <h4>@cpuData.ParallelTime ms</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white text-center">
+                                    <div class="card-body">
+                                        <h6>سرعت بهبود</h6>
+                                        <h4>@cpuData.Speedup.ToString("F2")x</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white text-center">
+                                    <div class="card-body">
+                                        <h6>بهبود عملکرد</h6>
+                                        <h4>@cpuData.ImprovementPercentage.ToString("F1")%</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar Comparison -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">مقایسه عملکرد</h6>
+                            <div class="progress" style="height: 40px;">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: @(cpuData.Speedup > 1 ? (1 / cpuData.Speedup * 100) : 100)%" 
+                                     aria-valuenow="@(cpuData.Speedup > 1 ? (1 / cpuData.Speedup * 100) : 100)" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <strong>ترتیبی: @cpuData.SequentialTime ms</strong>
+                                </div>
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: @(cpuData.Speedup > 1 ? ((cpuData.Speedup - 1) / cpuData.Speedup * 100) : 0)%" 
+                                     aria-valuenow="@(cpuData.Speedup > 1 ? ((cpuData.Speedup - 1) / cpuData.Speedup * 100) : 0)" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <strong>موازی: @cpuData.ParallelTime ms</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Info -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>تعداد اعداد پردازش شده</h6>
+                                        <h4>@cpuData.NumbersProcessed.ToString("N0")</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6>صرفه‌جویی زمان</h6>
+                                        <h4 class="text-success">@((cpuData.SequentialTime - cpuData.ParallelTime)) ms</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sample Results -->
+                        @if (cpuData.FactorialResults != null && cpuData.FactorialResults.Any())
+                        {
+                            <div class="mb-4">
+                                <h6>نمونه نتایج (20 مورد اول):</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>عدد</th>
+                                                <th>فاکتوریل</th>
+                                                <th>مجموع ارقام</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var result in cpuData.FactorialResults)
+                                            {
+                                                <tr>
+                                                    <td>@result.Number</td>
+                                                    <td>@result.Factorial.ToString("N0")</td>
+                                                    <td>@result.SumOfDigits</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Code Example -->
+                        <div class="card bg-light">
+                            <div class="card-header">
+                                <h6 class="mb-0">کد استفاده شده</h6>
+                            </div>
+                            <div class="card-body">
+                                <pre><code class="language-csharp">// CPU-Bound Processing with PLINQ
+var numbers = Enumerable.Range(1, 10000).ToList();
+
+// Sequential
+var sequentialResults = numbers
+    .Select(n => new FactorialResult
+    {
+        Number = n,
+        Factorial = CalculateFactorial(n % 20),
+        SumOfDigits = CalculateSumOfDigits(n)
+    })
+    .ToList();
+
+// Parallel (PLINQ) - Much faster for CPU-bound operations
+var parallelResults = numbers
+    .AsParallel()
+    .Select(n => new FactorialResult
+    {
+        Number = n,
+        Factorial = CalculateFactorial(n % 20),
+        SumOfDigits = CalculateSumOfDigits(n)
+    })
+    .ToList();</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="row mt-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0">کد استفاده شده</h5>
+                    <h5 class="mb-0">کد استفاده شده (مثال‌های قبلی)</h5>
                 </div>
                 <div class="card-body">
                     <pre><code class="language-csharp">// PLINQ Example

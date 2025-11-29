@@ -22,6 +22,7 @@ public class ParallelDemoViewModel
     // For PLINQ demo
     public List<Customer>? PlinqResults { get; set; }
     public List<RegionStat>? RegionStats { get; set; }
+    public CpuBoundResult? CpuBoundData { get; set; }
 
     // For Dynamic Parallelism demo
     public DynamicParallelismViewModel? DynamicParallelismData { get; set; }
@@ -44,14 +45,15 @@ public class FileProcessingResult
 
 public class NumberStats
 {
-    public int Count { get; private set; }
-    public int Sum { get; private set; }
+    public long Count { get; private set; }
+    public long Sum { get; private set; }
     public double Average => Count > 0 ? (double)Sum / Count : 0;
-    public int Min { get; private set; } = int.MaxValue;
-    public int Max { get; private set; } = int.MinValue;
+    public long Min { get; private set; } = long.MaxValue;
+    public long Max { get; private set; } = long.MinValue;
 
-    public NumberStats Add(int number)
+    public NumberStats Add(long number)
     {
+        Console.WriteLine(Environment.CurrentManagedThreadId);
         Count++;
         Sum += number;
         Min = Math.Min(Min, number);
@@ -61,6 +63,7 @@ public class NumberStats
 
     public NumberStats Combine(NumberStats other)
     {
+        Console.WriteLine(Environment.CurrentManagedThreadId);
         var combined = new NumberStats
         {
             Count = this.Count + other.Count,
@@ -129,4 +132,24 @@ public class DynamicParallelismViewModel
     public long ExecutionTime { get; set; }
     public int TotalNodesProcessed { get; set; }
     public int MaxDepth { get; set; }
+}
+
+// CPU-Bound Processing Models
+public class CpuBoundResult
+{
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public long SequentialTime { get; set; }
+    public long ParallelTime { get; set; }
+    public double Speedup { get; set; }
+    public double ImprovementPercentage { get; set; }
+    public int NumbersProcessed { get; set; }
+    public List<FactorialResult>? FactorialResults { get; set; }
+}
+
+public class FactorialResult
+{
+    public int Number { get; set; }
+    public long Factorial { get; set; }
+    public long SumOfDigits { get; set; }
 }
