@@ -1,0 +1,195 @@
+@model ParallelProcessingDemo.Models.ParallelDemoViewModel
+
+@{
+    ViewData["Title"] = "Dynamic Parallelism Results";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">@Model.Title</h1>
+            <p class="lead mb-4">@Model.Description</p>
+        </div>
+    </div>
+
+    @if (Model.DynamicParallelismData != null)
+    {
+        var data = Model.DynamicParallelismData;
+
+        <!-- Statistics Card -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">زمان اجرا</h5>
+                        <h3 class="text-primary">@data.ExecutionTime ms</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">تعداد نودهای پردازش شده</h5>
+                        <h3 class="text-success">@data.TotalNodesProcessed</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">عمق درخت</h5>
+                        <h3 class="text-info">@data.MaxDepth</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">روش استفاده شده</h5>
+                        <h3 class="text-warning">Dynamic Parallelism</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tree Processing Results -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-sitemap"></i> نتایج پردازش درخت
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>شناسه نود</th>
+                                        <th>نام نود</th>
+                                        <th>مقدار پردازش شده</th>
+                                        <th>عمق</th>
+                                        <th>زمان پردازش (ms)</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var result in (data.TreeResults?.OrderBy(r => r.Depth).ThenBy(r => r.NodeId).ToList() ?? new List<ParallelProcessingDemo.Models.TreeProcessingResult>()))
+                                    {
+                                        <tr>
+                                            <td>@result.NodeId</td>
+                                            <td>
+                                                <span class="badge bg-secondary">@result.NodeName</span>
+                                            </td>
+                                            <td>@result.ProcessedValue</td>
+                                            <td>
+                                                <span class="badge bg-info">@result.Depth</span>
+                                            </td>
+                                            <td>@result.ProcessingTimeMs</td>
+                                            <td>
+                                                <span class="badge bg-success">@result.Status</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Execution Log -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list-alt"></i> لاگ اجرای وظایف (Parent-Child Tasks)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa; padding: 15px; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 0.9em;">
+                            @foreach (var logEntry in data.TaskExecutionLog ?? new List<string>())
+                            {
+                                <div class="mb-1">@logEntry</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Example -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-code"></i> مثال کد: Dynamic Parallelism
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="mb-3">مثال 1: Parent-Child Tasks</h6>
+                        <pre><code class="language-csharp">var parentTask = Task.Run(() =>
+{
+    // Create child tasks dynamically
+    var childTasks = new List&lt;Task&gt;();
+    
+    for (int i = 1; i &lt;= 3; i++)
+    {
+        int childId = i;
+        var childTask = Task.Run(() =>
+        {
+            // Child task work
+            Thread.Sleep(500);
+        });
+        childTasks.Add(childTask);
+    }
+    
+    // Wait for all children
+    Task.WaitAll(childTasks.ToArray());
+});
+
+await parentTask;</code></pre>
+
+                        <h6 class="mb-3 mt-4">مثال 2: Tree Processing with Dynamic Parallelism</h6>
+                        <pre><code class="language-csharp">async Task ProcessTreeDynamicParallel(
+    TreeNode node, 
+    ConcurrentBag&lt;TreeProcessingResult&gt; results, 
+    int depth)
+{
+    // Process current node
+    await Task.Run(() =>
+    {
+        // Process node
+        results.Add(new TreeProcessingResult { ... });
+    });
+
+    // Process children dynamically in parallel
+    if (node.Children.Any())
+    {
+        var childTasks = node.Children.Select(child => 
+            ProcessTreeDynamicParallel(child, results, depth + 1)
+        ).ToArray();
+
+        await Task.WhenAll(childTasks);
+    }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Back Button -->
+    <div class="row">
+        <div class="col-12">
+            <a href="@Url.Action("Index")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> بازگشت به صفحه اصلی
+            </a>
+        </div>
+    </div>
+</div>
+

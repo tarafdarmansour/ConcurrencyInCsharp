@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ParallelProcessingDemo.Models;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace ParallelProcessingDemo.Controllers;
 
@@ -155,6 +156,70 @@ public class ParallelController : Controller
         return View("PlinqResult", model);
     }
 
+    // Dynamic Parallelism Examples
+    public async Task<IActionResult> DynamicParallelismDemo()
+    {
+        var model = new ParallelDemoViewModel
+        {
+            Title = "Dynamic Parallelism Demonstration",
+            Description = "Creating tasks dynamically during execution - Parent-Child Tasks and Tree Processing"
+        };
+
+        var stopwatch = Stopwatch.StartNew();
+        var executionLog = new ConcurrentBag<string>();
+        var treeResults = new ConcurrentBag<TreeProcessingResult>();
+
+        // Example 1: Parent-Child Tasks
+        executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Starting Parent Task");
+        
+        var parentTask = Task.Run(() =>
+        {
+            executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Parent task started");
+            
+            // Create child tasks dynamically
+            var childTasks = new List<Task>();
+            
+            for (int i = 1; i <= 3; i++)
+            {
+                int childId = i;
+                var childTask = Task.Run(() =>
+                {
+                    executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Child task {childId} started");
+                    Thread.Sleep(Random.Shared.Next(500, 1500)); // Simulate work
+                    executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Child task {childId} completed");
+                });
+                childTasks.Add(childTask);
+            }
+            
+            // Wait for all children to complete
+            Task.WaitAll(childTasks.ToArray());
+            executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Parent task completed - all children finished");
+        });
+
+        await parentTask;
+
+        // Example 2: Tree Processing with Dynamic Parallelism
+        executionLog.Add($"[{DateTime.Now:HH:mm:ss.fff}] Starting Tree Processing");
+        var rootNode = GenerateTreeStructure(4, 3); // Depth 4, branching factor 3
+        
+        await ProcessTreeDynamicParallel(rootNode, treeResults, executionLog, 0);
+
+        stopwatch.Stop();
+
+        model.DynamicParallelismData = new DynamicParallelismViewModel
+        {
+            Title = "Dynamic Parallelism Results",
+            Description = "Results from parent-child tasks and tree processing",
+            TreeResults = treeResults.ToList(),
+            TaskExecutionLog = executionLog.ToList(),
+            ExecutionTime = stopwatch.ElapsedMilliseconds,
+            TotalNodesProcessed = treeResults.Count,
+            MaxDepth = treeResults.Any() ? treeResults.Max(r => r.Depth) : 0
+        };
+
+        return View("DynamicParallelismResult", model);
+    }
+
     // Performance Comparison
     public async Task<IActionResult> PerformanceComparison()
     {
@@ -286,6 +351,72 @@ public class ParallelController : Controller
         }
 
         return customers;
+    }
+
+    // Dynamic Parallelism Helper Methods
+    private TreeNode GenerateTreeStructure(int maxDepth, int branchingFactor, int currentDepth = 0, int nodeId = 1)
+    {
+        var node = new TreeNode
+        {
+            Id = nodeId,
+            Name = $"Node-{nodeId}",
+            Value = Random.Shared.Next(1, 100),
+            Depth = currentDepth
+        };
+
+        if (currentDepth < maxDepth - 1)
+        {
+            for (int i = 0; i < branchingFactor; i++)
+            {
+                var child = GenerateTreeStructure(maxDepth, branchingFactor, currentDepth + 1, nodeId * 10 + i + 1);
+                child.Parent = node;
+                node.Children.Add(child);
+            }
+        }
+
+        return node;
+    }
+
+    private async Task ProcessTreeDynamicParallel(
+        TreeNode node, 
+        ConcurrentBag<TreeProcessingResult> results, 
+        ConcurrentBag<string> log, 
+        int depth)
+    {
+        var nodeStopwatch = Stopwatch.StartNew();
+        
+        log.Add($"[{DateTime.Now:HH:mm:ss.fff}] Processing node {node.Name} at depth {depth}");
+
+        // Simulate processing the current node
+        await Task.Run(() =>
+        {
+            Thread.Sleep(Random.Shared.Next(100, 500)); // Simulate work
+            var processedValue = node.Value * 2; // Some processing
+
+            results.Add(new TreeProcessingResult
+            {
+                NodeId = node.Id,
+                NodeName = node.Name,
+                ProcessedValue = processedValue,
+                Depth = depth,
+                ProcessingTimeMs = nodeStopwatch.ElapsedMilliseconds,
+                Status = "Completed"
+            });
+        });
+
+        nodeStopwatch.Stop();
+
+        // Process children dynamically in parallel
+        if (node.Children.Any())
+        {
+            var childTasks = node.Children.Select(child => 
+                ProcessTreeDynamicParallel(child, results, log, depth + 1)
+            ).ToArray();
+
+            await Task.WhenAll(childTasks);
+        }
+
+        log.Add($"[{DateTime.Now:HH:mm:ss.fff}] Completed node {node.Name} and all its children");
     }
 
     #endregion

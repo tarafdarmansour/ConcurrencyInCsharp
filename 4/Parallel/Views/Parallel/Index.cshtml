@@ -10,7 +10,7 @@
             <h1 class="mb-4">Parallel Processing in .NET</h1>
             <p class="lead mb-4">
                 این پروژه مثال‌های کاربردی از پردازش موازی در دات نت را نمایش می‌دهد.
-                هر کدام از تکنیک‌های Parallel.ForEach، AsParallel().Aggregate، Parallel.Invoke و PLINQ را می‌توانید مشاهده کنید.
+                هر کدام از تکنیک‌های Parallel.ForEach، AsParallel().Aggregate، Parallel.Invoke، Dynamic Parallelism و PLINQ را می‌توانید مشاهده کنید.
             </p>
         </div>
     </div>
@@ -86,6 +86,25 @@
                         این مثال پردازش داده‌های بزرگ با LINQ موازی را نشان می‌دهد.
                     </p>
                     <a href="@Url.Action("PlinqDemo")" class="btn btn-info">
+                        مشاهده مثال
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-project-diagram"></i> Dynamic Parallelism
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        ایجاد وظایف به صورت پویا در حین اجرای برنامه. این مثال شامل Parent-Child Tasks و پردازش درخت‌ها است.
+                        مناسب برای ساختارهای داده درختی و الگوریتم‌های بازگشتی.
+                    </p>
+                    <a href="@Url.Action("DynamicParallelismDemo")" class="btn btn-danger">
                         مشاهده مثال
                     </a>
                 </div>

@@ -22,6 +22,9 @@ public class ParallelDemoViewModel
     // For PLINQ demo
     public List<Customer>? PlinqResults { get; set; }
     public List<RegionStat>? RegionStats { get; set; }
+
+    // For Dynamic Parallelism demo
+    public DynamicParallelismViewModel? DynamicParallelismData { get; set; }
 }
 
 public class FileProcessingInfo
@@ -94,4 +97,36 @@ public class PerformanceComparisonViewModel
     public NumberStats? SequentialStats { get; set; }
     public NumberStats? ParallelStats { get; set; }
     public double Speedup { get; set; }
+}
+
+// Dynamic Parallelism Models
+public class TreeNode
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public int Value { get; set; }
+    public List<TreeNode> Children { get; set; } = new();
+    public TreeNode? Parent { get; set; }
+    public int Depth { get; set; }
+}
+
+public class TreeProcessingResult
+{
+    public int NodeId { get; set; }
+    public string NodeName { get; set; } = string.Empty;
+    public int ProcessedValue { get; set; }
+    public int Depth { get; set; }
+    public long ProcessingTimeMs { get; set; }
+    public string Status { get; set; } = string.Empty;
+}
+
+public class DynamicParallelismViewModel
+{
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public List<TreeProcessingResult>? TreeResults { get; set; }
+    public List<string>? TaskExecutionLog { get; set; }
+    public long ExecutionTime { get; set; }
+    public int TotalNodesProcessed { get; set; }
+    public int MaxDepth { get; set; }
 }
